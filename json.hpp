@@ -441,9 +441,29 @@ inline std::ostream& operator<<( std::ostream &os, const JSON &json ) {
 namespace {
     JSON parse_next( const string &, size_t & );
 
+   // void consume_ws( const string &str, size_t &offset ) {
+   //     while( isspace( str[offset] ) ) ++offset;
+   // }
+
+// consume white spaces and JSON5 Comments
     void consume_ws( const string &str, size_t &offset ) {
         while( isspace( str[offset] ) ) ++offset;
+        if(str[offset]== '/') {
+            offset++;
+            if(str[offset]== '/') { // singel line comment
+                // skip to end of comment 
+                while(str[offset] != '\n' && str[offset] !=0) ++offset; 
+            }
+            if(str[offset]== '*') { // multiline comment
+                // skip to end of comment 
+                offset++;
+                while(str[offset-1] != '*' || str[offset] != '/') ++offset;
+                offset++;
+            }
+            while( isspace( str[offset] ) ) ++offset;
+        }
     }
+
 
     JSON parse_object( const string &str, size_t &offset ) {
         JSON Object = JSON::Make( JSON::Class::Object );
